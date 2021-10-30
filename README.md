@@ -14,6 +14,7 @@ The application uses 3 entities:
  - Message
  - Chat
 Chats are general entities that can apply to either group chats or P2P chats. In other words, P2P chats are just chats limited to 2 participants, automatically created when User A sends a message to User B for the first time.
+Each of the entities has a corresponding repository and controller
 
 ## API Documentation
 The following API endpoints are available, grouped in 3 categories:
