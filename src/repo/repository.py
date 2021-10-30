@@ -20,7 +20,7 @@ class Repository:
         conn.execute('''
         CREATE TABLE IF NOT EXISTS Chats
         (
-            cid INT NOT NULL
+            cid INT PRIMARY KEY
         )''')
         conn.execute('''
         CREATE TABLE IF NOT EXISTS Users
@@ -33,7 +33,7 @@ class Repository:
         CREATE TABLE IF NOT EXISTS Messages
         (
             sender_username TEXT NOT NULL,
-            destination_chat_id INT NOT NULL
+            destination_chat_id INT NOT NULL,
             timestamp TEXT NOT NULL,
             MESSAGE TEXT NOT NULL,
             FOREIGN KEY (sender_username)
@@ -50,7 +50,7 @@ class Repository:
         CREATE TABLE IF NOT EXISTS ChatMembers
         (
             chat_id INT NOT NULL,
-            username TEXT NOT NULL
+            username TEXT NOT NULL,
             FOREIGN KEY (chat_id)
                 REFERENCES Chats (cid)
                 ON DELETE CASCADE
