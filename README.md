@@ -3,17 +3,17 @@
 This repository contains the API for a simple text messaging application (with authentication, p2p messaging and group chat functionalities).
 
 ## Technology stack
-The application is written in Python 3.10, using the Flask web framework.
-The storage is done using SQLite 3
-The deployment is done using Docker + DockerCompose
+The application is written in Python 3.10, using the Flask web framework.  
+The storage is done using SQLite 3  
+The deployment is done using Docker + DockerCompose  
 User passwords are hashed using the bcrypt library
 
 ## Data model
 The application uses 3 entities:
  - User
  - Message
- - Chat
-Chats are general entities that can apply to either group chats or P2P chats. In other words, P2P chats are just chats limited to 2 participants, automatically created when User A sends a message to User B for the first time.
+ - Chat  
+Chats are general entities that can apply to either group chats or P2P chats. In other words, P2P chats are just chats limited to 2 participants, automatically created when User A sends a message to User B for the first time.  
 Each of the entities has a corresponding repository and controller
 
 ## API Documentation
@@ -104,7 +104,7 @@ The following API endpoints are available, grouped in 3 categories:
 ## Deployment information
 The project includes a Dockerfile that can be used for development deployment. After downloading the project, the container can be built using:
 
-    `$ docker build --tag messaging-application-challenge src`
+`$ docker build --tag messaging-application-challenge src`
 
 Afterwards, the container can be run most simply using docker-compose. The `docker-compose.yml` file should contain:
 
@@ -121,7 +121,7 @@ Afterwards, the container can be run most simply using docker-compose. The `dock
               - FLASK_SECRET_KEY=RANDOMLY GENERATED SECRET FLASK KEY GOES HERE
 
 Then, the container can be started with:
-`$ docker-compose -f ./docker-compose.yml up -d`
+`$ docker-compose -f ./docker-compose.yml up -d
 
 Alternatively, the container can be run from the command line using:
 
@@ -131,5 +131,5 @@ Alternatively, the container can be run from the command line using:
     -v ${USERDIR}/docker/MessagingApplicationChallenge/resources:/app/resources 
     messaging-application-challenge
 
-The given Dockerfile uses Flask's built-in webserver and is, thus, unsuitable for a production environment. This should only be used in a development environment.
+The given Dockerfile uses Flask's built-in webserver and is, thus, unsuitable for a production environment. This should only be used in a development environment.  
 For a production environment, an alternative web server should be used (such as Apache or Tomcat) in order to serve files securely and with full performance.
