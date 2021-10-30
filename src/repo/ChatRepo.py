@@ -18,13 +18,8 @@ class ChatRepo:
         cursor = connection.cursor()
         cursor.execute(
                 'INSERT INTO Chats (is_group_chat) '
-                'VALUES (?) '
-                'RETURNING cid', (int(is_group_chat),))
-        try:
-            row = cursor.fetchall()[0]
-            new_chat_id = row[0]
-        except IndexError:
-            raise
+                'VALUES (?) ', (int(is_group_chat),))
+        new_chat_id = cursor.lastrowid
         connection.commit()
         return new_chat_id
 
