@@ -106,14 +106,20 @@ def api_group_chat_add(group_chat_id: int):
         data_dict = json.loads(request.data.decode('utf-8'))
     except JSONDecodeError:
         return 'Malformed request', 400
+
     try:
         username = data_dict['username']
     except KeyError:
         return 'Malformed request', 400
+
+    if not user_controller.exists(username):
+        return 'The user does no exist', 400
+
     try:
         success = chat_controller.add_user_to_chat(group_chat_id, username)
     except ValueError:
         return 'You cannot add members to a P2P chat', 400
+
     if success:
         return 'Success', 200
     else:
@@ -125,6 +131,8 @@ def api_group_chat_add(group_chat_id: int):
 def api_group_chat_delete(group_chat_id: int, username: str):
     if not chat_controller.is_member(cid=group_chat_id, username=flask_login.current_user.username):
         return 'You are not a member of that chat, so you cannot edit it', 403
+    if not user_controller.exists(username):
+        return 'The user does no exist', 400
     success = chat_controller.delete_user_from_chat(group_chat_id, username)
     if success:
         return 'Success', 200
