@@ -15,7 +15,9 @@ class ChatController:
     def get_by_id(self, cid: int) -> Chat or None:
         return self.repo.get_chat_by_id(cid)
 
-    def get_p2p_by_members(self, member1: str, member2: str) -> Chat or None:
+    def get_p2p_by_members(self, member1: str, member2: str) -> Chat:
+        if not self.repo.get_chat_by_members(member1=member1, member2=member2):
+            self.create_p2p_chat(sender_username=member1, dest_username=member2)
         return self.repo.get_chat_by_members(member1, member2)
 
     def create_group_chat(self, owner_username: str) -> int:
@@ -23,10 +25,11 @@ class ChatController:
         self.repo.add_user_to_chat(cid=new_chat_id, username=owner_username)
         return new_chat_id
 
-    def create_p2p_chat(self, sender_username: str, dest_username: str) -> None:
+    def create_p2p_chat(self, sender_username: str, dest_username: str) -> int:
         new_chat_id = self.repo.create_chat(False)
         self.repo.add_user_to_chat(cid=new_chat_id, username=sender_username)
         self.repo.add_user_to_chat(cid=new_chat_id, username=dest_username)
+        return new_chat_id
 
     def add_user_to_chat(self, cid: int, username: str) -> bool:
         if not self.repo.can_accept_new_members(cid=cid):

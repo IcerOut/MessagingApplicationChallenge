@@ -7,6 +7,7 @@ from flask import Flask, abort, request
 from flask.cli import load_dotenv
 
 from controller.ChatController import ChatController
+from controller.MessageController import MessageController
 from controller.UserController import UserController
 from entities.User import User
 from repo.Repository import Repository
@@ -29,10 +30,7 @@ def app_factory():
 app, login_manager = app_factory()
 user_controller = UserController()
 chat_controller = ChatController()
-
-
-# message_repository = MessageRepo()
-# chat_repository = ChatRepo()
+message_controller = MessageController()
 
 
 @login_manager.user_loader
@@ -91,7 +89,7 @@ def api_group_chat_create():
 @flask_login.login_required
 def api_group_chat_add(group_chat_id: int):
     if not chat_controller.is_member(cid=group_chat_id, username=flask_login.current_user.username):
-        return 'You are not a member of that chat, so you cannot edit it', 401
+        return 'You are not a member of that chat, so you cannot edit it', 403
     data_dict = json.loads(request.data.decode('utf-8'))
     username = data_dict['username']
     try:
@@ -108,7 +106,7 @@ def api_group_chat_add(group_chat_id: int):
 @flask_login.login_required
 def api_group_chat_delete(group_chat_id: int, username: str):
     if not chat_controller.is_member(cid=group_chat_id, username=flask_login.current_user.username):
-        return 'You are not a member of that chat, so you cannot edit it', 401
+        return 'You are not a member of that chat, so you cannot edit it', 403
     success = chat_controller.delete_user_from_chat(group_chat_id, username)
     if success:
         return 'Success', 200
@@ -118,6 +116,71 @@ def api_group_chat_delete(group_chat_id: int, username: str):
 
 # </editor-fold>
 # <editor-fold desc="Messages Routes">
+@app.route('/v1/messages', methods=['POST'])
+@flask_login.login_required
+def api_message_add():
+    data_dict = json.loads(request.data.decode('utf-8'))
+    try:
+        # The message is sent to a group chat
+        chat_id = data_dict['group_chat_id']
+        if not chat_controller.is_member(cid=chat_id,
+                                         username=flask_login.current_user.username):
+            return 'You are not a member of that chat, so you cannot send messages to it', 403
+    except Exception:
+        # The message is sent to a P2P chat
+        dest_username = data_dict['dest_username']
+        if not user_controller.exists(dest_username):
+            return 'The destination user does no exist', 400
+        chat_id = chat_controller.get_p2p_by_members(flask_login.current_user.username,
+                                                     dest_username).cid
+    message = data_dict['message']
+    message_controller.send_message(sender_username=flask_login.current_user.username, cid=chat_id,
+                                    message=message)
+    return 'Success', 200
+
+
+@app.route('/v1/messages/group/<int:group_chat_id>', methods=['GET'])
+@flask_login.login_required
+def api_message_get_group(group_chat_id: int):
+    if not chat_controller.is_member(cid=group_chat_id,
+                                     username=flask_login.current_user.username):
+        return 'You are not a member of that chat, so you cannot view its messages', 403
+    message_list = message_controller.get_chat_messages(cid=group_chat_id)
+    return json.dumps([str(message) for message in message_list]), 200
+
+
+@app.route('/v1/messages/p2p/<string:dest_username>', methods=['GET'])
+@flask_login.login_required
+def api_message_get_p2p(dest_username: str):
+    if not user_controller.exists(dest_username):
+        return 'The destination user does no exist', 400
+    p2p_chat_id = chat_controller.get_p2p_by_members(flask_login.current_user.username,
+                                                     dest_username).cid
+    message_list = message_controller.get_chat_messages(cid=p2p_chat_id)
+    return json.dumps([str(message) for message in message_list]), 200
+
+
+@app.route('/v1/messages', methods=['GET'])
+@flask_login.login_required
+def api_messages_get_all():
+    # data_dict = json.loads(request.data.decode('utf-8'))
+    # try:
+    #     # Load the messages for a group chat
+    #     chat_id = data_dict['group_chat_id']
+    #     if not chat_controller.is_member(cid=chat_id,
+    #                                      username=flask_login.current_user.username):
+    #         return 'You are not a member of that chat, so you cannot view its messages', 403
+    # except Exception:
+    #     # The message is sent to a P2P chat
+    #     dest_username = data_dict['dest_username']
+    #     if not user_controller.exists(dest_username):
+    #         return 'The destination user does no exist', 400
+    #     chat_id = chat_controller.get_p2p_by_members(flask_login.current_user.username,
+    #                                                  dest_username).cid
+    message_list = message_controller.get_user_messages(username=flask_login.current_user.username)
+    return json.dumps([str(message) for message in message_list]), 200
+
+
 # </editor-fold>
 # </editor-fold>
 

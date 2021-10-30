@@ -36,7 +36,7 @@ class Repository:
             sender_username TEXT NOT NULL,
             destination_chat_id INTEGER NOT NULL,
             timestamp TEXT NOT NULL,
-            MESSAGE TEXT NOT NULL,
+            message TEXT NOT NULL,
             FOREIGN KEY (sender_username)
                 REFERENCES Users (username)
                 ON DELETE NO ACTION
