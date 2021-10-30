@@ -1,1 +1,5 @@
-DB_FILE_LOCATION = 'db.sqlite3'
+import os
+
+RESOURCES_PATH = 'resources'
+DB_FILE_LOCATION = RESOURCES_PATH + os.sep + 'db.sqlite3'
+FAVICON_FILE_LOCATION = RESOURCES_PATH + os.sep + 'favicon.ico'
