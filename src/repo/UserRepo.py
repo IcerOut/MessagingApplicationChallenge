@@ -1,5 +1,5 @@
 from entities.User import User
-from repo.repository import Repository
+from repo.Repository import Repository
 
 
 class UserRepo:
