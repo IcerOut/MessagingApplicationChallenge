@@ -41,11 +41,6 @@ def load_user(username) -> User or None:
         return None
 
 
-@app.route('/')
-def hello_world():  # put application's code here
-    return 'Hello World!'
-
-
 @app.route('/v1/auth/register', methods=['POST'])
 def api_user_register():
     data_dict = json.loads(request.data.decode('utf-8'))
