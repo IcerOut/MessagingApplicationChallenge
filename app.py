@@ -8,7 +8,7 @@ from flask.cli import load_dotenv
 
 from controller.UserController import UserController
 from entities.User import User
-from repo.repository import Repository
+from repo.Repository import Repository
 
 
 def app_factory():
@@ -22,7 +22,7 @@ def app_factory():
 
     _login_manager = flask_login.LoginManager()
     _login_manager.init_app(_app)
-    return _app, _login_manager,
+    return _app, _login_manager
 
 
 app, login_manager = app_factory()
@@ -41,6 +41,8 @@ def load_user(username) -> User or None:
         return None
 
 
+# <editor-fold desc="Routes">
+# <editor-fold desc="Auth Routes">
 @app.route('/v1/auth/register', methods=['POST'])
 def api_user_register():
     data_dict = json.loads(request.data.decode('utf-8'))
@@ -73,6 +75,13 @@ def api_user_logout():
     flask_login.logout_user()
     return 'Success', 200
 
+
+# </editor-fold>
+# <editor-fold desc="Group Chat Routes">
+# </editor-fold>
+# <editor-fold desc="Messages Routes">
+# </editor-fold>
+# </editor-fold>
 
 def startup():
     Repository.create_if_necessary()
