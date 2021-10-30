@@ -94,7 +94,10 @@ def api_group_chat_add(group_chat_id: int):
         return 'You are not a member of that chat, so you cannot edit it', 401
     data_dict = json.loads(request.data.decode('utf-8'))
     username = data_dict['username']
-    success = chat_controller.add_user_to_chat(group_chat_id, username)
+    try:
+        success = chat_controller.add_user_to_chat(group_chat_id, username)
+    except ValueError:
+        return 'You cannot add members to a P2P chat', 400
     if success:
         return 'Success', 200
     else:

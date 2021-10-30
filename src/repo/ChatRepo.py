@@ -7,18 +7,19 @@ from repo.Repository import Repository
 
 class ChatRepo:
     @Repository.db_connect
-    def create_chat(self, connection=None) -> int:
+    def create_chat(self, is_group_chat: bool, connection=None) -> int:
         """
         Create a new group chat and add the creator as the first member
+        :param is_group_chat: Whether the new chat is a group or p2p chat
         :param connection: DB Connection
         :param connection: The automatically-managed connection object
         :return: The ID of the newly created group chat
         """
         cursor = connection.cursor()
         cursor.execute(
-                'INSERT INTO Chats '
-                'DEFAULT VALUES '
-                'RETURNING cid')
+                'INSERT INTO Chats (is_group_chat) '
+                'VALUES (?) '
+                'RETURNING cid', (int(is_group_chat),))
         try:
             row = cursor.fetchall()[0]
             new_chat_id = row[0]
@@ -30,12 +31,12 @@ class ChatRepo:
     @Repository.db_connect
     def get_chat_by_id(self, cid: int, connection=None) -> Chat or None:
         cursor = connection.cursor()
-        cursor.execute('SELECT * '
+        cursor.execute('SELECT cid, is_group_chat '
                        'FROM Chats '
                        'WHERE cid = ?', (cid,))
         try:
             row = cursor.fetchall()[0]
-            return Chat(cid=row[0])
+            return Chat(cid=row[0], is_group_chat=bool(row[1]))
         except IndexError:
             return None
 
@@ -46,10 +47,11 @@ class ChatRepo:
                        'FROM Chats AS C '
                        'INNER JOIN ChatMembers AS M1 ON C.cid = M1.chat_id '
                        'INNER JOIN ChatMembers AS M2 ON C.cid = M2.chat_id '
-                       'WHERE M1.username = ? AND M2.username = ?', (member1, member2))
+                       'WHERE C.is_group_chat == "0" AND M1.username = ? AND M2.username = ?',
+                       (member1, member2))
         try:
             row = cursor.fetchall()[0]
-            return Chat(cid=row[0])
+            return Chat(cid=row[0], is_group_chat=False)
         except IndexError:
             return None
 
@@ -93,6 +95,18 @@ class ChatRepo:
             return True
         except sqlite3.Error as err:
             logging.error(err)
+            return False
+
+    @Repository.db_connect
+    def can_accept_new_members(self, cid: int, connection=None) -> bool:
+        cursor = connection.cursor()
+        cursor.execute('SELECT * '
+                       'FROM ChatsThatCanAcceptNewMembers '
+                       'WHERE cid == ?', (cid,))
+        try:
+            row = cursor.fetchall()[0]
+            return row[0] is not None
+        except IndexError:
             return False
 
     @Repository.db_connect
