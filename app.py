@@ -6,6 +6,7 @@ import flask_login
 from flask import Flask, abort, request
 from flask.cli import load_dotenv
 
+from controller.ChatController import ChatController
 from controller.UserController import UserController
 from entities.User import User
 from repo.Repository import Repository
@@ -27,6 +28,7 @@ def app_factory():
 
 app, login_manager = app_factory()
 user_controller = UserController()
+chat_controller = ChatController()
 
 
 # message_repository = MessageRepo()
@@ -78,6 +80,39 @@ def api_user_logout():
 
 # </editor-fold>
 # <editor-fold desc="Group Chat Routes">
+@app.route('/v1/group_chat', methods=['POST'])
+@flask_login.login_required
+def api_group_chat_create():
+    new_chat_id = chat_controller.create_group_chat(flask_login.current_user.username)
+    return f'{{ "chat_id": {new_chat_id} }}', 200
+
+
+@app.route('/v1/group_chat/<int:group_chat_id>/participants', methods=['POST'])
+@flask_login.login_required
+def api_group_chat_add(group_chat_id: int):
+    if not chat_controller.is_member(cid=group_chat_id, username=flask_login.current_user.username):
+        return 'You are not a member of that chat, so you cannot edit it', 401
+    data_dict = json.loads(request.data.decode('utf-8'))
+    username = data_dict['username']
+    success = chat_controller.add_user_to_chat(group_chat_id, username)
+    if success:
+        return 'Success', 200
+    else:
+        return 'User is already in that chat', 400
+
+
+@app.route('/v1/group_chat/<int:group_chat_id>/participants/<string:username>', methods=['DELETE'])
+@flask_login.login_required
+def api_group_chat_delete(group_chat_id: int, username: str):
+    if not chat_controller.is_member(cid=group_chat_id, username=flask_login.current_user.username):
+        return 'You are not a member of that chat, so you cannot edit it', 401
+    success = chat_controller.delete_user_from_chat(group_chat_id, username)
+    if success:
+        return 'Success', 200
+    else:
+        return 'User is not part of that chat', 400
+
+
 # </editor-fold>
 # <editor-fold desc="Messages Routes">
 # </editor-fold>
